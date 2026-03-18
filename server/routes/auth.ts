@@ -1,9 +1,21 @@
 import { RequestHandler } from "express";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create a function to get a fresh Supabase client with current env vars
+function getSupabaseClient() {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+
+  console.log("🔍 getSupabaseClient() called");
+  console.log("   URL from env:", supabaseUrl);
+  console.log("   Key exists:", !!supabaseAnonKey);
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing Supabase URL or API key");
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
 
 /**
  * Register a new user
@@ -53,6 +65,7 @@ export const handleRegister: RequestHandler = async (req, res) => {
     }
 
     console.log("Attempting Supabase insert...");
+    const supabase = getSupabaseClient();
     // Insert into users table
     const { data, error } = await supabase
       .from("users")
@@ -122,6 +135,7 @@ export const handleLogin: RequestHandler = async (req, res) => {
     }
 
     // Query users table to find user with matching first_name, last_name and generated_id
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("users")
       .select("*")
@@ -173,6 +187,7 @@ export const handleGetProfile: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Generated ID is required" });
     }
 
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("users")
       .select("*")
@@ -215,6 +230,7 @@ export const handleSavePdfQrCode: RequestHandler = async (req, res) => {
     }
 
     // Update user with PDF and QR code URLs
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("users")
       .update({

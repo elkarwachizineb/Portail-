@@ -1,8 +1,12 @@
 import "dotenv/config";
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import { handleDemo } from "./routes/demo";
+
+// Force reload of environment variables
+dotenv.config({ override: true });
 import { handleSendRegistrationWhatsApp, handleIncomingIdea } from "./routes/whatsapp";
 import { handleRegister, handleLogin, handleGetProfile, handleSavePdfQrCode } from "./routes/auth";
 import { handleSendIdeaNotification } from "./routes/ideas";
