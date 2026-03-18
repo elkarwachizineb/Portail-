@@ -11,6 +11,11 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
  */
 export const handleRegister: RequestHandler = async (req, res) => {
   try {
+    console.log("=== REGISTER REQUEST ===");
+    console.log("Supabase URL:", process.env.VITE_SUPABASE_URL);
+    console.log("Supabase Key loaded:", !!process.env.VITE_SUPABASE_ANON_KEY);
+    console.log("Request body keys:", Object.keys(req.body));
+
     const {
       first_name,
       last_name,
@@ -43,9 +48,11 @@ export const handleRegister: RequestHandler = async (req, res) => {
       !role_id ||
       !password
     ) {
+      console.log("Missing required fields check failed");
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    console.log("Attempting Supabase insert...");
     // Insert into users table
     const { data, error } = await supabase
       .from("users")
@@ -75,11 +82,14 @@ export const handleRegister: RequestHandler = async (req, res) => {
       .single();
 
     if (error) {
-      console.error("Supabase error:", error);
+      console.error("❌ Supabase insert error:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
       return res
         .status(400)
         .json({ error: error.message || "Registration failed" });
     }
+
+    console.log("✅ User registered successfully");
 
     // Return user data
     res.json({
