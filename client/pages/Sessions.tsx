@@ -64,10 +64,10 @@ export default function Sessions() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 p-6">
         <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-l from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-          الجلسات التدريبية
+          الحصص التدريبية
         </h1>
         <p className="text-gray-600">
-          إدارة وعرض جميع الجلسات التدريبية للفريق
+          إدارة وعرض جميع الحصص التدريبية للفريق
         </p>
       </div>
 
@@ -81,8 +81,8 @@ export default function Sessions() {
           </div>
         ) : sessions.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center border-t-4 border-gray-300">
-            <p className="text-gray-500 text-lg mb-4">لا توجد جلسات مسجلة</p>
-            <p className="text-gray-400 text-sm">ستظهر الجلسات الجديدة هنا</p>
+            <p className="text-gray-500 text-lg mb-4">لا توجد حصص مسجلة</p>
+            <p className="text-gray-400 text-sm">ستظهر الحصص الجديدة هنا</p>
           </div>
         ) : (
           <div className="space-y-6 pb-32">

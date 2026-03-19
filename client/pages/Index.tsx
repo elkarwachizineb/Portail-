@@ -3,7 +3,7 @@ import Layout from "../components/Layout";
 
 export default function Index() {
   return (
-    <Layout>
+    <Layout showHamburger={false}>
       <div className="max-w-md mx-auto">
         <div className="space-y-6">
           {/* Login Link */}

@@ -38,7 +38,7 @@ export default function Sidebar() {
       color: "text-red-600",
     },
     {
-      label: "الجلسات",
+      label: "الحصص",
       icon: Users,
       path: "/sessions",
       color: "text-purple-600",

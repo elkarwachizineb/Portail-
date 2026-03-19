@@ -58,7 +58,7 @@ export default function Program() {
         </div>
       ) : programs.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-8 text-center border-t-4 border-gray-300">
-          <p className="text-gray-500 text-lg">لا توجد جلسات مسجلة</p>
+          <p className="text-gray-500 text-lg">لا توجد حصص مسجلة</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
