@@ -21,6 +21,10 @@ import Program from "./pages/Program";
 import Ideas from "./pages/Ideas";
 import Account from "./pages/Account";
 import MyProfile from "./pages/MyProfile";
+import Sessions from "./pages/Sessions";
+import Members from "./pages/Members";
+import IdeasBox from "./pages/IdeasBox";
+import MemberProfile from "./pages/MemberProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -102,6 +106,38 @@ const App = () => (
                 element={
                   <ProtectedLayout>
                     <MyProfile />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/sessions"
+                element={
+                  <ProtectedLayout>
+                    <Sessions />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/members"
+                element={
+                  <ProtectedLayout>
+                    <Members />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/ideas-box"
+                element={
+                  <ProtectedLayout>
+                    <IdeasBox />
+                  </ProtectedLayout>
+                }
+              />
+              <Route
+                path="/member-profile"
+                element={
+                  <ProtectedLayout>
+                    <MemberProfile />
                   </ProtectedLayout>
                 }
               />
