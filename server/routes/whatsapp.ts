@@ -12,10 +12,10 @@ export const handleSendRegistrationWhatsApp: RequestHandler = async (req, res) =
       return res.status(400).json({ error: "No form data provided" });
     }
 
-    const twilioAccountSid = process.env.VITE_TWILIO_ACCOUNT_SID;
-    const twilioAuthToken = process.env.VITE_TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.VITE_TWILIO_PHONE_NUMBER;
-    const adminWhatsApp = process.env.VITE_ADMIN_WHATSAPP;
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER;
+    const adminWhatsApp = process.env.ADMIN_WHATSAPP;
 
     if (!twilioAccountSid || !twilioAuthToken || !fromNumber || !adminWhatsApp) {
       return res.status(500).json({ error: "Twilio configuration missing" });
@@ -72,9 +72,9 @@ export const handleIncomingIdea: RequestHandler = async (req, res) => {
     console.log(`New idea from ${From}: ${Body}`);
 
     // Send confirmation
-    const twilioAccountSid = process.env.VITE_TWILIO_ACCOUNT_SID;
-    const twilioAuthToken = process.env.VITE_TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.VITE_TWILIO_PHONE_NUMBER;
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER;
 
     if (twilioAccountSid && twilioAuthToken && fromNumber) {
       await fetch(
