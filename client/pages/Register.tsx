@@ -257,15 +257,24 @@ export default function Register() {
       const memberId = userData.generated_id;
       const userId = userData.id;
 
-      // Send to WhatsApp (for Ideas Box only - optional)
+      // Send to WhatsApp notification
       try {
-        await fetch("/api/whatsapp/send-registration", {
+        console.log("📱 Attempting to send WhatsApp notification...");
+        const whatsappResponse = await fetch("/api/whatsapp/send-registration", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ formData }),
-        }).catch(console.error);
+        });
+
+        if (!whatsappResponse.ok) {
+          const whatsappError = await whatsappResponse.json();
+          console.warn("⚠️ WhatsApp notification failed (non-critical):", whatsappError);
+        } else {
+          const whatsappData = await whatsappResponse.json();
+          console.log("✅ WhatsApp notification sent:", whatsappData);
+        }
       } catch (error) {
-        console.error("Error sending WhatsApp:", error);
+        console.error("⚠️ WhatsApp error (non-critical):", error);
       }
 
       // Redirect to account confirmation page with data

@@ -150,6 +150,91 @@ export function createServer() {
   app.get("/api/auth/profile", handleGetProfile);
   app.post("/api/auth/save-documents", handleSavePdfQrCode);
 
+  // WhatsApp test with hardcoded data
+  app.get("/api/test-whatsapp-send", async (_req, res) => {
+    try {
+      console.log("\n🧪 TESTING WHATSAPP SEND FUNCTIONALITY");
+      console.log("═══════════════════════════════════════════");
+
+      const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+      const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+      const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER;
+      const adminWhatsApp = process.env.ADMIN_WHATSAPP;
+
+      console.log("\n📋 Loaded Environment Variables:");
+      console.log(`  ✓ Account SID: ${twilioAccountSid ? "Set" : "❌ MISSING"}`);
+      console.log(`  ✓ Auth Token: ${twilioAuthToken ? "Set" : "❌ MISSING"}`);
+      console.log(`  ✓ From Number: ${fromNumber || "❌ MISSING"}`);
+      console.log(`  ✓ Admin WhatsApp: ${adminWhatsApp || "❌ MISSING"}`);
+
+      if (!twilioAccountSid || !twilioAuthToken || !fromNumber || !adminWhatsApp) {
+        return res.status(400).json({
+          error: "Missing Twilio credentials",
+          details: {
+            accountSid: !!twilioAccountSid,
+            authToken: !!twilioAuthToken,
+            fromNumber: !!fromNumber,
+            adminWhatsApp: !!adminWhatsApp
+          }
+        });
+      }
+
+      const testMessage = "🧪 Test WhatsApp Message from Fusion\nThis is a test to verify WhatsApp integration works.";
+
+      console.log("\n📤 Sending test message to Twilio API...");
+      console.log(`   From: ${fromNumber}`);
+      console.log(`   To: ${adminWhatsApp}`);
+      console.log(`   Message: ${testMessage.substring(0, 50)}...`);
+
+      const response = await fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString(
+              "base64"
+            )}`,
+          },
+          body: new URLSearchParams({
+            From: fromNumber,
+            To: adminWhatsApp,
+            Body: testMessage,
+          }).toString(),
+        }
+      );
+
+      const responseText = await response.text();
+      console.log(`\n📊 Twilio Response Status: ${response.status}`);
+
+      if (!response.ok) {
+        console.error("❌ Twilio API Error:");
+        console.error(responseText);
+        return res.status(response.status).json({
+          error: "Twilio API error",
+          status: response.status,
+          details: responseText
+        });
+      }
+
+      const data = JSON.parse(responseText);
+      console.log("✅ Message sent successfully!");
+      console.log(`   Message SID: ${(data as any).sid}`);
+
+      res.json({
+        success: true,
+        message: "Test message sent successfully",
+        messageSid: (data as any).sid
+      });
+    } catch (error: any) {
+      console.error("\n❌ Test error:", error.message);
+      res.status(500).json({
+        error: error.message,
+        type: error.constructor.name
+      });
+    }
+  });
+
   // WhatsApp routes
   app.post("/api/whatsapp/send-registration", handleSendRegistrationWhatsApp);
   app.post("/api/whatsapp/incoming-idea", handleIncomingIdea);
