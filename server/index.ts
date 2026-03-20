@@ -25,6 +25,78 @@ export function createServer() {
     res.json({ message: ping });
   });
 
+  // Twilio WhatsApp test endpoint
+  app.get("/api/test-twilio", async (_req, res) => {
+    try {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER;
+      const toNumber = process.env.ADMIN_WHATSAPP;
+
+      console.log("=== TWILIO TEST ===");
+      console.log("Account SID:", accountSid);
+      console.log("Auth Token exists:", !!authToken);
+      console.log("From:", fromNumber);
+      console.log("To:", toNumber);
+
+      if (!accountSid || !authToken || !fromNumber || !toNumber) {
+        return res.status(400).json({
+          error: "Missing Twilio credentials",
+          accountSid: !!accountSid,
+          authToken: !!authToken,
+          fromNumber: !!fromNumber,
+          toNumber: !!toNumber,
+        });
+      }
+
+      // Test message
+      const testMessage = "🧪 Test WhatsApp from Fusion Starter";
+
+      const response = await fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString(
+              "base64"
+            )}`,
+          },
+          body: new URLSearchParams({
+            From: fromNumber,
+            To: toNumber,
+            Body: testMessage,
+          }).toString(),
+        }
+      );
+
+      const responseText = await response.text();
+      console.log("Response Status:", response.status);
+      console.log("Response Body:", responseText);
+
+      if (!response.ok) {
+        return res.status(response.status).json({
+          error: "Twilio API error",
+          status: response.status,
+          body: responseText,
+        });
+      }
+
+      const data = JSON.parse(responseText);
+      res.json({
+        success: true,
+        message: "WhatsApp test message sent successfully",
+        messageSid: (data as any).sid,
+      });
+    } catch (error: any) {
+      console.error("Twilio test error:", error);
+      res.status(500).json({
+        error: error.message,
+        stack: error.stack,
+      });
+    }
+  });
+
   // Supabase connection test endpoint
   app.get("/api/test-supabase", async (_req, res) => {
     try {
