@@ -51,86 +51,113 @@ export default function AccountConfirmation() {
   const generatePDF = async () => {
     setGenerating(true);
     try {
-      const doc = new jsPDF();
+      // Use HTML element approach for better RTL and Arabic support
+      // Create a hidden HTML element with proper RTL and font support
+      const pdfContainer = document.createElement('div');
+      pdfContainer.innerHTML = `
+        <div style="
+          padding: 40px;
+          direction: rtl;
+          text-align: right;
+          font-family: 'Cairo', 'Noto Sans Arabic', 'Arial Unicode MS', sans-serif;
+          background: white;
+          width: 210mm;
+          height: 297mm;
+        ">
+          <h1 style="text-align: center; font-size: 28px; font-weight: bold; margin-bottom: 10px; direction: rtl;">
+            الكشافة الحسنية صفي
+          </h1>
+          <h2 style="text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; direction: rtl;">
+            شهادة تأكيد الحساب
+          </h2>
+          <hr style="border: none; border-top: 2px solid #ddd; margin-bottom: 20px;">
+
+          <p style="text-align: center; font-size: 16px; margin-bottom: 30px; direction: rtl;">
+            مبروك! تم إنشاء حسابك بنجاح
+          </p>
+
+          <div style="margin: 30px 0;">
+            ${[
+              { label: "الاسم الكامل:", value: `${registrationData.firstName} ${registrationData.lastName}` },
+              { label: "رقم العضو:", value: memberId },
+              { label: "معرف المستخدم:", value: userId },
+              { label: "رقم الهاتف:", value: registrationData.phone || "N/A" },
+              { label: "تاريخ الميلاد:", value: registrationData.birthDate || "N/A" },
+              { label: "الجنس:", value: registrationData.gender === "male" ? "ذكر" : "أنثى" },
+              { label: "الفريق:", value: registrationData.patrol || "N/A" },
+              { label: "الدور:", value: registrationData.role || "N/A" },
+            ]
+              .map(
+                (item) => `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #eee;">
+                <span style="font-weight: bold; direction: rtl;">${item.label}</span>
+                <span style="direction: rtl;">${item.value}</span>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+
+          <hr style="border: none; border-top: 2px solid #ddd; margin: 30px 0;">
+
+          <p style="text-align: center; font-size: 12px; color: #666; margin-bottom: 5px; direction: rtl;">
+            تم الإنشاء: ${new Date().toLocaleDateString("ar-MA")}
+          </p>
+          <p style="text-align: center; font-size: 11px; color: #999; direction: rtl;">
+            جميع الحقوق محفوظة © 2026 الكشافة الحسنية صفي
+          </p>
+        </div>
+      `;
+
+      pdfContainer.style.position = 'absolute';
+      pdfContainer.style.left = '-9999px';
+      pdfContainer.style.top = '-9999px';
+      document.body.appendChild(pdfContainer);
+
+      // Convert HTML to canvas for better rendering
+      const canvas = await html2canvas(pdfContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      // Convert canvas to PDF
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Set font
-      doc.setFont("Arial", "bold");
-      doc.setFontSize(24);
+      // Calculate image dimensions to fit page
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-      // Header
-      doc.text("الكشافة الحسنية صفي", pageWidth / 2, 20, { align: "center" });
-      doc.setFontSize(16);
-      doc.text("شهادة تأكيد الحساب", pageWidth / 2, 35, { align: "center" });
+      doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
-      // Horizontal line
-      doc.setDrawColor(200);
-      doc.line(10, 42, pageWidth - 10, 42);
-
-      // Congratulations
-      doc.setFontSize(14);
-      doc.text("مبروك! تم إنشاء حسابك بنجاح", pageWidth / 2, 55, { align: "center" });
-
-      // Info section
-      doc.setFontSize(11);
-      let yPosition = 75;
-
-      const infoItems = [
-        { label: "الاسم الكامل:", value: `${registrationData.firstName} ${registrationData.lastName}` },
-        { label: "رقم العضو:", value: memberId },
-        { label: "معرف المستخدم:", value: userId },
-        { label: "رقم الهاتف:", value: registrationData.phone || "N/A" },
-        { label: "تاريخ الميلاد:", value: registrationData.birthDate || "N/A" },
-        { label: "الجنس:", value: registrationData.gender === "male" ? "ذكر" : "أنثى" },
-        { label: "الفريق:", value: registrationData.patrol || "N/A" },
-        { label: "الدور:", value: registrationData.role || "N/A" },
-      ];
-
-      infoItems.forEach((item) => {
-        doc.setFont("Arial", "bold");
-        doc.setFontSize(10);
-        doc.text(item.label, pageWidth - 20, yPosition);
-
-        doc.setFont("Arial", "normal");
-        doc.setFontSize(10);
-        doc.text(item.value, pageWidth - 100, yPosition);
-
-        yPosition += 10;
-      });
-
-      // Footer
-      doc.setDrawColor(200);
-      doc.line(10, pageHeight - 30, pageWidth - 10, pageHeight - 30);
-
-      doc.setFontSize(9);
-      doc.setTextColor(100);
-      doc.text(
-        `تم الإنشاء: ${new Date().toLocaleDateString("ar-MA")}`,
-        pageWidth / 2,
-        pageHeight - 20,
-        { align: "center" }
-      );
-      doc.text(
-        "جميع الحقوق محفوظة © 2026 الكشافة الحسنية صفي",
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: "center" }
-      );
-
-      // Generate and save
-      const pdfData = doc.output("dataurlstring");
+      const pdfData = doc.output('dataurlstring');
       setPdfUrl(pdfData);
 
-      // Generate QR code with member ID (QR codes have size limits, so we use a simple identifier)
+      // Clean up
+      document.body.removeChild(pdfContainer);
+
+      // Generate QR code with member profile link (optimized for URL format)
       let qrCodeDataUrl = "";
       try {
-        const qrValue = `Member ID: ${memberId}\nUser ID: ${userId}`;
+        // Use URL format for better usability - can be scanned and redirected
+        // Format: domain/member-profile?id=memberId
+        const currentUrl = window.location.origin;
+        const qrValue = `${currentUrl}/member-profile?id=${memberId}`;
+
         qrCodeDataUrl = await QRCode.toDataURL(qrValue, {
           errorCorrectionLevel: "H",
           type: "image/png",
           width: 200,
-          margin: 1,
+          margin: 2,
           color: {
             dark: "#000000",
             light: "#FFFFFF",

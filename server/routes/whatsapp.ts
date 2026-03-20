@@ -8,23 +8,35 @@ export const handleSendRegistrationWhatsApp: RequestHandler = async (req, res) =
   try {
     const { formData } = req.body;
 
+    console.log("🔔 WhatsApp registration notification triggered");
+
     if (!formData) {
+      console.error("❌ No formData provided");
       return res.status(400).json({ error: "No form data provided" });
     }
 
-    const twilioAccountSid = process.env.VITE_TWILIO_ACCOUNT_SID;
-    const twilioAuthToken = process.env.VITE_TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.VITE_TWILIO_PHONE_NUMBER;
-    const adminWhatsApp = process.env.VITE_ADMIN_WHATSAPP;
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER;
+    const adminWhatsApp = process.env.ADMIN_WHATSAPP;
+
+    console.log("📋 Twilio Config Check:");
+    console.log(`  - Account SID: ${twilioAccountSid ? "✅ Set" : "❌ Missing"}`);
+    console.log(`  - Auth Token: ${twilioAuthToken ? "✅ Set" : "❌ Missing"}`);
+    console.log(`  - From Number: ${fromNumber || "❌ Missing"}`);
+    console.log(`  - Admin WhatsApp: ${adminWhatsApp || "❌ Missing"}`);
 
     if (!twilioAccountSid || !twilioAuthToken || !fromNumber || !adminWhatsApp) {
+      console.error("❌ Twilio configuration missing");
       return res.status(500).json({ error: "Twilio configuration missing" });
     }
 
     // Build WhatsApp message with registration data
     const message = formatRegistrationMessage(formData);
+    console.log(`📝 Message prepared: ${message.substring(0, 50)}...`);
 
     // Send via Twilio
+    console.log(`📤 Sending WhatsApp to ${adminWhatsApp}...`);
     const response = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
       {
@@ -43,17 +55,20 @@ export const handleSendRegistrationWhatsApp: RequestHandler = async (req, res) =
       }
     );
 
+    console.log(`📊 Twilio Response Status: ${response.status}`);
+
     if (!response.ok) {
       const error = await response.text();
-      console.error("Twilio error:", error);
-      return res.status(500).json({ error: "Failed to send WhatsApp message" });
+      console.error("❌ Twilio API Error:", error);
+      return res.status(500).json({ error: "Failed to send WhatsApp message", details: error });
     }
 
     const data = await response.json();
+    console.log("✅ WhatsApp message sent successfully:", (data as any).sid);
     res.json({ success: true, messageId: (data as any).sid });
   } catch (error) {
-    console.error("Error sending WhatsApp:", error);
-    res.status(500).json({ error: "Server error" });
+    console.error("❌ Error sending WhatsApp:", error);
+    res.status(500).json({ error: "Server error", details: String(error) });
   }
 };
 
@@ -72,9 +87,9 @@ export const handleIncomingIdea: RequestHandler = async (req, res) => {
     console.log(`New idea from ${From}: ${Body}`);
 
     // Send confirmation
-    const twilioAccountSid = process.env.VITE_TWILIO_ACCOUNT_SID;
-    const twilioAuthToken = process.env.VITE_TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.VITE_TWILIO_PHONE_NUMBER;
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_WHATSAPP_NUMBER;
 
     if (twilioAccountSid && twilioAuthToken && fromNumber) {
       await fetch(
